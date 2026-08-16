@@ -3,7 +3,8 @@ import { ChainAdapter } from './base.js';
 export class TronNativeAdapter extends ChainAdapter {
   async instance(url, privateKey) {
     const { TronWeb } = await import('tronweb');
-    const headers = this.chain.apiKey ? { 'TRON-PRO-API-KEY': this.chain.apiKey } : {};
+    const headers = {...this.rpcHeaders()};
+    if(this.chain.apiKey) headers['TRON-PRO-API-KEY']=this.chain.apiKey;
     return new TronWeb({ fullHost: url, headers, privateKey });
   }
   async healthyTron(privateKey) {
@@ -60,6 +61,6 @@ export class TronNativeAdapter extends ChainAdapter {
     const amount = balance - reserve;
     const result = await t.trx.sendTransaction(owner, Number(amount), key);
     if (result?.result === false) throw new Error(result?.message || 'TRON sweep failed');
-    return { status: 'swept', txid: result?.txid || result?.transaction?.txID || null, feeAtomic: reserve.toString(), sentAtomic: amount.toString() };
+    return { status: 'swept', txid: result?.txid || result?.transaction?.txID || null, feeAtomic: reserve.toString(), feeSymbol:'TRX', sentAtomic: amount.toString() };
   }
 }

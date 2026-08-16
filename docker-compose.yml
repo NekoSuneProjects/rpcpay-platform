@@ -1,5 +1,6 @@
 services:
   rpcpay:
+    image: ghcr.io/nekosuneprojects/rpcpay-platform:latest
     build: .
     container_name: rpcpay-platform
     restart: unless-stopped
