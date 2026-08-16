@@ -1,19 +1,20 @@
 {
   "name": "rpcpay-platform",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Lightweight self-hosted multi-chain RPC donation gateway with campaigns, sweeping, admin UI and webhooks",
+  "description": "Lightweight self-hosted multi-chain RPC donation gateway with campaigns, native coins, tokens, sweeping, admin UI and webhooks",
   "type": "module",
   "engines": { "node": ">=24.0.0" },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test",
-    "check": "node --check src/index.js && node --check src/api/server.js && node --check src/adapters/evm.js && node --check src/adapters/bitcoinRpc.js && node --check src/adapters/solana.js && node --check src/adapters/tron.js && node --check src/adapters/lnd.js"
+    "check": "node --check src/index.js && node --check src/api/server.js && node --check src/adapters/evm.js && node --check src/adapters/evmToken.js && node --check src/adapters/bitcoinRpc.js && node --check src/adapters/solana.js && node --check src/adapters/solanaToken.js && node --check src/adapters/tron.js && node --check src/adapters/tronToken.js && node --check src/adapters/lnd.js"
   },
   "dependencies": {
-    "@solana/web3.js": "^1.98.0",
-    "ethers": "^6.13.0",
-    "tronweb": "^6.0.0"
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.4",
+    "ethers": "^6.17.0",
+    "tronweb": "^6.4.0"
   }
 }
