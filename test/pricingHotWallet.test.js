@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PriceService } from '../src/services/prices.js';
-import { EvmHotWalletService } from '../src/services/hotWallet.js';
+import { EvmHotWalletService, loadHotWalletPortfolio } from '../src/services/hotWallet.js';
 
 const walletAddress='0x000000000000000000000000000000000000dEaD';
 
@@ -49,5 +49,24 @@ test('EVM hot wallet reports native and configured token balances', async () => 
   assert.equal(snapshot.address,walletAddress);
   assert.equal(snapshot.networks[0].native.balance,'1.0');
   assert.equal(snapshot.networks[0].tokens[0].balance,'2.5');
+  assert.equal(snapshot.networks[0].nonZeroAssets,2);
+  assert.equal(snapshot.networks[0].assetCount,2);
   assert.equal(snapshot.totalFiat,'2002.50');
+});
+
+test('default hot wallet portfolio tracks Base 3, Ethereum 5 and Polygon 3 assets', () => {
+  const portfolio=loadHotWalletPortfolio('./config/hot-wallet.json');
+  assert.deepEqual(portfolio.networks.map((network)=>network.id),['base','ethereum','polygon']);
+  const counts=Object.fromEntries(portfolio.networks.map((network)=>[network.id,1+network.tokens.length]));
+  assert.deepEqual(counts,{base:3,ethereum:5,polygon:3});
+
+  const base=portfolio.networks.find((network)=>network.id==='base');
+  const ethereum=portfolio.networks.find((network)=>network.id==='ethereum');
+  const polygon=portfolio.networks.find((network)=>network.id==='polygon');
+  assert.deepEqual(base.tokens.map((token)=>token.symbol),['cbBTC','USDC']);
+  assert.deepEqual(ethereum.tokens.map((token)=>token.symbol),['cbBTC','PYUSD','USDC','USDT']);
+  assert.deepEqual(polygon.tokens.map((token)=>token.symbol),['USDC','USDT0']);
+  assert.equal(base.tokens[0].contractAddress,'0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf');
+  assert.equal(ethereum.tokens[1].contractAddress,'0x6c3ea9036406852006290770BEdFcAbA0e23A0e8');
+  assert.equal(polygon.tokens[1].contractAddress,'0xc2132D05D31c914a87C6611C10748AEb04B58e8F');
 });
