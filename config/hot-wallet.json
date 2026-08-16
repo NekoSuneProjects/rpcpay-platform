@@ -1,0 +1,91 @@
+{
+  "networks": [
+    {
+      "id": "base",
+      "tokens": [
+        {
+          "id": "base-cbbtc",
+          "name": "Coinbase Wrapped BTC on Base",
+          "symbol": "cbBTC",
+          "contractAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "decimals": 8,
+          "marketSymbol": "btc",
+          "priceId": "bitcoin"
+        },
+        {
+          "id": "base-usdc",
+          "name": "USD Coin on Base",
+          "symbol": "USDC",
+          "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "decimals": 6,
+          "marketSymbol": "usdc",
+          "priceId": "usd-coin"
+        }
+      ]
+    },
+    {
+      "id": "ethereum",
+      "tokens": [
+        {
+          "id": "ethereum-cbbtc",
+          "name": "Coinbase Wrapped BTC on Ethereum",
+          "symbol": "cbBTC",
+          "contractAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "decimals": 8,
+          "marketSymbol": "btc",
+          "priceId": "bitcoin"
+        },
+        {
+          "id": "ethereum-pyusd",
+          "name": "PayPal USD on Ethereum",
+          "symbol": "PYUSD",
+          "contractAddress": "0x6c3ea9036406852006290770BEdFcAbA0e23A0e8",
+          "decimals": 6,
+          "marketSymbol": "pyusd",
+          "priceId": "paypal-usd"
+        },
+        {
+          "id": "ethereum-usdc",
+          "name": "USD Coin on Ethereum",
+          "symbol": "USDC",
+          "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "decimals": 6,
+          "marketSymbol": "usdc",
+          "priceId": "usd-coin"
+        },
+        {
+          "id": "ethereum-usdt",
+          "name": "Tether USD on Ethereum",
+          "symbol": "USDT",
+          "contractAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "decimals": 6,
+          "marketSymbol": "usdt",
+          "priceId": "tether"
+        }
+      ]
+    },
+    {
+      "id": "polygon",
+      "tokens": [
+        {
+          "id": "polygon-usdc",
+          "name": "USD Coin on Polygon",
+          "symbol": "USDC",
+          "contractAddress": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "decimals": 6,
+          "marketSymbol": "usdc",
+          "priceId": "usd-coin"
+        },
+        {
+          "id": "polygon-usdt0",
+          "name": "USDT0 on Polygon",
+          "symbol": "USDT0",
+          "contractAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+          "decimals": 6,
+          "marketSymbol": "usdt",
+          "priceId": "tether"
+        }
+      ]
+    }
+  ]
+}
