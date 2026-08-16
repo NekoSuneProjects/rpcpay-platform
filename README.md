@@ -1,24 +1,21 @@
-# RPCPay Platform v0.3.0
+# RPCPay Platform v0.4.0
 
-RPCPay is a lightweight, self-hosted cryptocurrency donation/payment gateway focused on direct blockchain RPC verification rather than a large ecommerce stack or a custodial payment processor.
+RPCPay is a lightweight, self-hosted cryptocurrency donation/payment gateway focused on direct blockchain RPC verification rather than a custodial payment processor.
 
-It provides campaign pages, goals, per-payment deposit addresses, confirmations, signed webhooks and automatic sweeping to your treasury wallet.
+It provides campaign pages, fiat quoting, per-payment deposit addresses, confirmations, signed webhooks, automatic sweeping, token support, RPC failover and an EVM hot-wallet portfolio dashboard.
 
-## v0.3 highlights
+## v0.4 highlights
 
-- Native payments: ETH, POL, BNB, TRX, SOL, BTC, DOGE, LTC, BCH, DASH, PIVX and Bitcoin Lightning
-- Generic **ERC-20 / BEP-20 / EVM token** adapter
-- Generic **TRC-20** adapter
-- Generic **SPL Token / Token-2022** adapter
-- Included USDC and USDT presets
-- Multiple RPC endpoints with health-based failover
-- PublicNode-ready defaults for EVM, TRON and Solana networks
-- Optional NOWNodes endpoints/API key
-- Token gas-sponsor wallets for automatic token sweeping
-- Public campaign pages with goals and verified totals
-- Admin UI for owner wallet, enable/disable, auto-sweep and multi-RPC configuration
-- GitHub Actions test + multi-architecture Docker build
-- Automatic GHCR publishing on `main` and version tags
+- **NOWNodes Market Data pricing** with CoinGecko fallback
+- Price provider modes: `auto`, `nownodes`, or `coingecko`
+- Admin **EVM Hot Wallet** portfolio page
+- Shows native ETH/POL/BNB balances across configured EVM networks
+- Shows every configured ERC-20/BEP-20 token balance for the hot-wallet address
+- Optional fiat portfolio values using the same price service as invoices
+- Public/read-only RPC references for BTC, DOGE, LTC, BCH, DASH and PIVX
+- Clear separation between public blockchain RPC and private UTXO wallet RPC
+- Existing ERC-20/TRC-20/SPL token payments and automatic sweeping remain supported
+- GitHub Actions syntax/tests plus amd64/arm64 Docker builds and GHCR publishing
 
 ## Payment architecture
 
@@ -30,7 +27,7 @@ Create invoice
        |
        +-- native EVM / TRX / SOL --> unique temporary wallet
        +-- ERC20/TRC20/SPL token --> unique temporary wallet
-       +-- BTC/DOGE/etc -----------> daemon getnewaddress
+       +-- BTC/DOGE/etc -----------> private daemon getnewaddress
        +-- Lightning --------------> LND BOLT11 invoice
        |
        v
@@ -43,17 +40,14 @@ RPC verification + confirmations
 payment.confirmed
        |
        +-- native asset ---> sweep balance - network fee
-       |
-       +-- token ----------> gas sponsor funds network fee if needed
-       |                     then token is swept to treasury
-       |
+       +-- token ----------> gas sponsor funds fee if needed, then sweep token
        +-- Lightning ------> already settled in LND
        |
        v
 payment.swept
 ```
 
-## Included payment assets
+## Supported payment assets
 
 ### Native assets
 
@@ -65,12 +59,12 @@ payment.swept
 | BNB Smart Chain / BNB | EVM | JSON-RPC | automatic |
 | TRON / TRX | TronWeb/full-node API | block scan | automatic |
 | Solana / SOL | Solana JSON-RPC | signature/balance | automatic |
-| Bitcoin / BTC | Core-compatible wallet RPC | wallet RPC | automatic |
-| Dogecoin / DOGE | Core-compatible wallet RPC | wallet RPC | automatic |
-| Litecoin / LTC | Core-compatible wallet RPC | wallet RPC | automatic |
-| Bitcoin Cash / BCH | Core-compatible wallet RPC | wallet RPC | automatic |
-| Dash / DASH | Core-compatible wallet RPC | wallet RPC | automatic |
-| PIVX / PIVX | Core-compatible wallet RPC | wallet RPC | automatic |
+| Bitcoin / BTC | Core-compatible private wallet RPC | wallet RPC | automatic |
+| Dogecoin / DOGE | Core-compatible private wallet RPC | wallet RPC | automatic |
+| Litecoin / LTC | Core-compatible private wallet RPC | wallet RPC | automatic |
+| Bitcoin Cash / BCH | Core-compatible private wallet RPC | wallet RPC | automatic |
+| Dash / DASH | Core-compatible private wallet RPC | wallet RPC | automatic |
+| PIVX / PIVX | Core-compatible private wallet RPC | wallet RPC | automatic |
 | Bitcoin Lightning | LND REST | invoice state | already in LND |
 
 ### Included token presets
@@ -86,15 +80,96 @@ payment.swept
 | `solana-usdc` | USDC | Solana | SPL Token |
 | `solana-usdt` | USDT | Solana | SPL Token |
 
-USDC/USDT contract and mint identifiers in the example config are issuer/network presets. Always verify token addresses before accepting mainnet money.
+Always verify contract and mint identifiers from the issuer before accepting mainnet funds.
 
-## "All tokens" support
+## Pricing: RPC is not a fiat price feed
 
-RPCPay does not need Coinbase to accept a token. A payment asset is defined by its **network + contract/mint + decimals**.
+Blockchain RPC tells RPCPay about chain state: blocks, transactions, balances, receipts and smart-contract calls. A normal RPC node does **not** inherently know the fiat market price of BTC, ETH, PIVX, USDC, etc.
 
-Any normal ERC-20/BEP-20-style token can use `evm-token`, any normal TRC-20 can use `tron-token`, and SPL/Token-2022 assets can use `solana-token`.
+RPCPay therefore keeps **payment verification** and **market pricing** separate.
 
-Example arbitrary ERC-20 token:
+### NOWNodes Market Data
+
+NOWNodes provides a dedicated market-data service separate from its blockchain node RPCs. RPCPay v0.4 can use its current-price endpoint:
+
+```text
+https://market-data.nownodes.io/api/v1/price
+```
+
+Configure:
+
+```env
+PRICE_PROVIDER=auto
+NOWNODES_MARKET_API_BASE=https://market-data.nownodes.io/api/v1
+NOWNODES_MARKET_API_KEY=your-key
+```
+
+`auto` prefers NOWNodes Market Data when a key is available, then falls back to CoinGecko if the NOWNodes quote fails.
+
+Force NOWNodes only:
+
+```env
+PRICE_PROVIDER=nownodes
+```
+
+### CoinGecko fallback
+
+```env
+PRICE_PROVIDER=coingecko
+PRICE_API_BASE=https://api.coingecko.com/api/v3
+COINGECKO_API_KEY=
+```
+
+Neither NOWNodes Market Data nor CoinGecko processes the payment. They only provide fiat/crypto conversion rates used when an invoice is created.
+
+## EVM Hot Wallet portfolio
+
+Open:
+
+```text
+/admin -> Hot Wallet
+```
+
+Configure a single EVM address to view it across Ethereum, Base, Polygon and BNB Smart Chain:
+
+```env
+EVM_HOT_WALLET_ADDRESS=0xYourAddress
+```
+
+This is **watch-only mode**. RPCPay reads:
+
+```text
+eth_getBalance
+ERC20 balanceOf(address) via eth_call
+```
+
+The dashboard shows the native balance plus every EVM token configured in `chains.json`, along with optional fiat values.
+
+You can also configure a dedicated hot-wallet private key:
+
+```env
+EVM_HOT_WALLET_PRIVATE_KEY=0x...
+```
+
+RPCPay derives the public address and never returns the private key through the admin API. If both `EVM_HOT_WALLET_ADDRESS` and the private key are configured, they must match.
+
+**The v0.4 dashboard is a balance/portfolio view; it does not expose a browser withdrawal/signing endpoint.** Keep private keys server-side.
+
+### What "all EVM tokens" means
+
+Standard EVM JSON-RPC does not have a universal method such as `eth_getAllTokensOwnedByAddress`. A node knows contract state, but it does not maintain a standardized wallet-token portfolio index.
+
+Therefore the built-in dashboard safely shows:
+
+```text
+all native EVM balances
++
+all ERC-20/BEP-20 assets configured in RPCPay
+```
+
+To discover arbitrary unknown token contracts automatically, RPCPay would need an indexer/provider token API or a large historical log scan. The dashboard deliberately does not pretend plain RPC can enumerate tokens it has never been told about.
+
+Add another ERC-20/BEP-20 asset to `chains.json` and it automatically appears in the hot-wallet portfolio:
 
 ```json
 {
@@ -111,63 +186,21 @@ Example arbitrary ERC-20 token:
 }
 ```
 
-Example TRC-20:
-
-```json
-{
-  "id": "tron-my-token",
-  "name": "My TRC20 Token",
-  "symbol": "MYT",
-  "adapter": "tron-token",
-  "networkId": "tron",
-  "contractAddress": "TYourContractAddress",
-  "decimals": 6,
-  "confirmations": 19,
-  "priceId": "",
-  "gasTopupAtomic": "30000000",
-  "feeLimitSun": 100000000,
-  "enabled": false
-}
-```
-
-Example SPL token:
-
-```json
-{
-  "id": "solana-my-token",
-  "name": "My SPL Token",
-  "symbol": "MYT",
-  "adapter": "solana-token",
-  "networkId": "solana",
-  "mintAddress": "YourMintAddress",
-  "decimals": 6,
-  "confirmations": 2,
-  "priceId": "",
-  "enabled": false
-}
-```
-
-If a custom token is not supported by the configured price provider, direct crypto-amount invoices still work. To use it in a fiat-denominated campaign, configure a suitable `priceId` or add another price adapter.
-
-## Token verification
+## Token verification and sweeping
 
 ### EVM tokens
 
-RPCPay scans standard `Transfer(address,address,uint256)` logs using `eth_getLogs`, filtered by contract and invoice destination address. It then verifies the transaction receipt and confirmation depth.
+RPCPay scans standard `Transfer(address,address,uint256)` logs using `eth_getLogs`, filtered by token contract and invoice destination address. After confirmation it estimates transfer gas and can top up the temporary wallet from a dedicated gas sponsor before sweeping tokens to the treasury.
 
 ### TRC-20
 
-RPCPay scans TRON `TriggerSmartContract` transactions for the configured token contract and validates the standard `Transfer` event in the transaction receipt/logs.
+RPCPay validates the configured TRON token contract and standard transfer event, then can top up TRX for the sweep.
 
 ### Solana tokens
 
-RPCPay queries token accounts owned by the invoice wallet for the configured mint, checks the raw token amount, then checks the associated transaction signature status.
+RPCPay checks token accounts owned by the invoice wallet for the configured mint and verifies transaction confirmation state. A Solana sponsor can pay transaction fees and ATA rent when required.
 
-## Token gas sponsor wallets
-
-A token deposit wallet normally contains only the token. It cannot move that token until it has the chain's native gas asset.
-
-RPCPay therefore supports a small **gas sponsor hot wallet** per network:
+Gas sponsor configuration:
 
 ```env
 ETH_GAS_SPONSOR_PRIVATE_KEY=
@@ -178,29 +211,13 @@ TRON_GAS_SPONSOR_PRIVATE_KEY=
 SOLANA_GAS_SPONSOR_SECRET_KEY=
 ```
 
-Recommended model:
-
-```text
-Cold/treasury wallet
-        ^
-        | token sweep
-        |
-Temporary invoice wallet <--- small gas top-up --- Gas sponsor hot wallet
-```
-
-Do **not** put your treasury/cold-wallet private key in a gas-sponsor variable. Keep only enough native coin in the sponsor wallet for expected sweep fees.
-
-For EVM tokens, RPCPay estimates the token transfer gas, checks the temporary wallet's native balance and tops up only the required gas amount before sweeping.
-
-For TRC-20, `gasTopupAtomic` controls the target TRX balance used for the token transfer. TRON energy/bandwidth economics change, so tune and test this value rather than assuming a fixed fee forever.
-
-For SPL tokens, the sponsor is the Solana transaction fee payer and may also pay rent if the treasury's associated token account must be created.
+Use dedicated low-balance sponsor wallets. Never use your cold/treasury private keys.
 
 ## RPC providers and failover
 
-Each asset/network can have multiple endpoints. RPCPay rotates healthy endpoints and temporarily backs off failing ones.
+EVM/TRON/Solana assets can have multiple active endpoints. RPCPay rotates healthy nodes and backs off failing endpoints.
 
-The example config includes PublicNode endpoints for:
+Example PublicNode defaults:
 
 ```text
 Ethereum  https://ethereum-rpc.publicnode.com
@@ -211,27 +228,43 @@ TRON      https://tron-rpc.publicnode.com
 Solana    https://solana-rpc.publicnode.com
 ```
 
-### NOWNodes
-
-NOWNodes can be used as another failover provider without hardcoding an API key in Git:
+Optional NOWNodes endpoints/API key remain server-side:
 
 ```env
-NOWNODES_API_KEY=your-key
-ETH_NOWNODES_RPC_URL=https://eth.nownodes.io/
-POLYGON_NOWNODES_RPC_URL=your-polygon-endpoint
-BASE_NOWNODES_RPC_URL=your-base-endpoint
-BNB_NOWNODES_RPC_URL=https://bsc.nownodes.io/
-TRON_NOWNODES_RPC_URL=your-tron-endpoint
-SOLANA_NOWNODES_RPC_URL=your-solana-endpoint
+NOWNODES_API_KEY=
+ETH_NOWNODES_RPC_URL=
+POLYGON_NOWNODES_RPC_URL=
+BASE_NOWNODES_RPC_URL=
+BNB_NOWNODES_RPC_URL=
+TRON_NOWNODES_RPC_URL=
+SOLANA_NOWNODES_RPC_URL=
 ```
 
-Use the exact endpoint shown in your NOWNodes dashboard. RPCPay sends `NOWNODES_API_KEY` in the server-side `api-key` header.
+## BTC / DOGE / LTC / BCH / DASH / PIVX public RPC references
 
-Provider credentials stay in `.env`; never put them in browser JavaScript.
+The config now records useful **network/read-only RPC references** separately from the private wallet RPC that RPCPay uses for custody.
 
-## Why BTC/DOGE/PIVX still need your wallet node
+```text
+BTC   https://bitcoin-rpc.publicnode.com
+      https://public-btc.nownodes.io
+      https://btc.nownodes.io
 
-Public providers are useful for blockchain reads, but the current Bitcoin-family adapter intentionally uses wallet RPC methods such as:
+DOGE  https://doge.nownodes.io
+LTC   https://ltc.nownodes.io
+BCH   https://bch.nownodes.io
+
+DASH  https://dash-rpc.publicnode.com
+      https://dash.nownodes.io
+
+PIVX  https://pivx-rpc.publicnode.com
+      https://pivx.nownodes.io
+```
+
+These appear in `/admin -> Chains & RPC` as **Public/read-only RPC references**.
+
+### Why they do not replace the private wallet RPC yet
+
+The current Bitcoin-family payment adapter allocates and spends through wallet methods:
 
 ```text
 getnewaddress
@@ -239,9 +272,32 @@ listreceivedbyaddress
 sendtoaddress
 ```
 
-A public RPC service should not expose a private wallet capable of signing withdrawals for you. Therefore BTC, DOGE, LTC, BCH, DASH and PIVX should normally point to **your own private daemon wallet**.
+Public/shared full nodes are appropriate for blockchain reads and, where enabled, broadcasting an already-signed raw transaction. They must not contain RPCPay's private wallet for you.
 
-PublicNode/NOWNodes can be useful for independent read-only verification in a future watch-only adapter, but they do not replace custody/signing for the current wallet-RPC flow.
+So the active wallet fields remain:
+
+```env
+BTC_RPC_URL=
+BTC_RPC_USER=
+BTC_RPC_PASSWORD=
+DOGE_RPC_URL=
+DOGE_RPC_USER=
+DOGE_RPC_PASSWORD=
+LTC_RPC_URL=
+LTC_RPC_USER=
+LTC_RPC_PASSWORD=
+BCH_RPC_URL=
+BCH_RPC_USER=
+BCH_RPC_PASSWORD=
+DASH_RPC_URL=
+DASH_RPC_USER=
+DASH_RPC_PASSWORD=
+PIVX_RPC_URL=
+PIVX_RPC_USER=
+PIVX_RPC_PASSWORD=
+```
+
+A future UTXO adapter can generate/sign locally and use PublicNode/NOWNodes only for blockchain reads and `sendrawtransaction`; that is a different custody model from the current daemon-wallet adapter.
 
 ## Bitcoin Lightning
 
@@ -252,9 +308,9 @@ LND_REST_URL=https://lnd:8080
 LND_MACAROON_HEX=...
 ```
 
-RPCPay creates BOLT11 invoices and verifies settlement through LND. Use a least-privileged macaroon and never expose LND REST directly to the internet.
+Use a least-privileged macaroon and do not expose LND REST directly to the public internet.
 
-## Install from source
+## Install
 
 ```bash
 cp .env.example .env
@@ -280,57 +336,39 @@ http://SERVER:8080/
 http://SERVER:8080/admin
 ```
 
-## Install the GitHub-built image
+## GitHub-built Docker image
 
-The GitHub workflow publishes multi-architecture images to GitHub Container Registry after changes land on `main`:
+The workflow publishes multi-architecture images after changes land on `main`:
 
 ```bash
 docker pull ghcr.io/nekosuneprojects/rpcpay-platform:latest
 ```
 
-The compose file already uses that image name while retaining `build: .` for local development.
-
-Published platforms:
+Platforms:
 
 ```text
 linux/amd64
 linux/arm64
 ```
 
-Version tags such as `v0.3.0` also generate matching GHCR tags.
-
-## GitHub Actions
-
-`.github/workflows/docker.yml` performs:
-
-```text
-checkout
-  -> Node 24
-  -> npm install
-  -> syntax checks
-  -> unit tests
-  -> Docker Buildx
-  -> amd64 + arm64 image build
-  -> GHCR publish (main/tags only)
-```
-
-Pull requests build and test the image but do not publish it.
+`.github/workflows/docker.yml` runs Node 24 dependency installation, syntax checks, unit tests and Docker Buildx before publishing to GHCR.
 
 ## Admin page
 
-`/admin` lets you:
+`/admin` provides:
 
-- create/manage campaigns
-- set fundraising goal and fiat currency
-- enable/disable payment assets
-- configure owner/treasury addresses
-- enable/disable automatic sweep
-- configure more than one RPC endpoint per asset
-- review payment and sweep status
-
-Token entries appear in the same payment-asset list as native coins. Leaving a token owner address blank makes the adapter fall back to its parent network's owner wallet.
+- Overview of recent invoices and sweep status
+- **Hot Wallet** EVM portfolio and fiat values
+- Campaign creation/management
+- Owner/treasury addresses
+- Asset enable/disable controls
+- Auto-sweep controls
+- Active RPC failover configuration
+- Read-only UTXO public RPC references
 
 ## Campaign accounting
+
+A campaign can be denominated in GBP, USD, EUR or another supported quote currency.
 
 Example:
 
@@ -340,16 +378,9 @@ Donation: GBP 25
 Payment asset: USDC on Base
 ```
 
-The crypto amount is quoted when the invoice is created. Once the payment is confirmed, the original GBP 25 is counted toward the campaign goal, so later crypto price movements do not rewrite historical fundraising totals.
+RPCPay obtains a price at invoice creation, locks the required crypto amount into the invoice, and records the original GBP 25 contribution. Later crypto market movement does not rewrite historical campaign totals.
 
-Pricing is separate from payment processing:
-
-```env
-PRICE_API_BASE=https://api.coingecko.com/api/v3
-COINGECKO_API_KEY=
-```
-
-## Public website API
+## Public API
 
 List payment assets:
 
@@ -357,7 +388,7 @@ List payment assets:
 GET /api/public/chains
 ```
 
-Create a campaign token invoice:
+Create a campaign invoice:
 
 ```http
 POST /api/public/campaigns/server-costs/invoices
@@ -369,7 +400,7 @@ Content-Type: application/json
 }
 ```
 
-Poll payment status:
+Poll:
 
 ```http
 GET /api/public/invoices/inv_...
@@ -390,6 +421,8 @@ curl -X POST http://127.0.0.1:8080/v1/invoices \
 
 ## Webhooks
 
+Events:
+
 ```text
 payment.detected
 payment.confirmed
@@ -398,49 +431,37 @@ payment.swept
 invoice.expired
 ```
 
-Signatures use:
+Signatures:
 
 ```text
 HMAC-SHA256(WEBHOOK_SECRET, timestamp + "." + raw_request_body)
 ```
 
-Headers:
-
-```text
-x-rpcpay-event
-x-rpcpay-timestamp
-x-rpcpay-signature
-```
-
 ## Custody and security
 
-For EVM, TRON and Solana invoice wallets, RPCPay encrypts generated private keys with AES-256-GCM before storing them in SQLite.
+For generated EVM, TRON and Solana invoice wallets, RPCPay encrypts private keys with AES-256-GCM before storing them in SQLite.
 
-Back up both:
-
-```text
-SQLite database
-WALLET_ENCRYPTION_KEY
-```
-
-If either is lost before a sweep, funds held by temporary invoice wallets may become unrecoverable.
+Back up both the SQLite database and `WALLET_ENCRYPTION_KEY`. Losing either before funds are swept can make temporary-wallet funds unrecoverable.
 
 Also:
 
 - use HTTPS in production
-- keep the admin panel protected
-- never expose Bitcoin-family wallet RPC ports publicly
+- protect `/admin`
+- never expose private UTXO wallet RPC ports publicly
 - never commit `.env`
 - use dedicated low-balance gas sponsor wallets
-- test every token on testnet/devnet or with tiny values first
-- verify contract/mint addresses from the issuer before enabling mainnet payments
-- remember that fee-on-transfer/rebasing/non-standard tokens may need a custom adapter even if they resemble ERC-20
+- avoid storing a hot-wallet private key unless the server actually needs signing capability
+- test tokens with tiny values/testnets before real payments
+- verify token contracts/mints from their issuers
+- treat fee-on-transfer/rebasing/reflection tokens as non-standard until explicitly tested
 
 ## Current limitations
 
-- Generic token support assumes normal transfer semantics. Fee-on-transfer, rebasing, reflection and unusual proxy/token behavior can require custom handling.
-- Split/partial token payments are not accumulated across multiple transactions yet; a single transfer must meet the invoice amount.
-- TRC-20 gas top-up is configurable rather than dynamically buying/delegating TRON Energy.
-- Bitcoin-family wallet RPC uses your daemon wallet; a watch-only/public-RPC + offline signer mode is a future adapter.
-- Lightning currently targets LND; Core Lightning is not yet included.
-- This software is custodial payment infrastructure. Review and test it before using real funds.
+- The EVM Hot Wallet view enumerates configured ERC-20/BEP-20 assets, not unknown token contracts.
+- The Hot Wallet page is a portfolio/balance view; browser withdrawals are intentionally not exposed in v0.4.
+- Generic token support assumes standard transfer semantics.
+- Partial token transfers are not accumulated across multiple transactions yet.
+- TRC-20 gas top-up remains configurable rather than dynamically purchasing/delegating Energy.
+- Bitcoin-family payments still use your private daemon wallet; local HD signing + public-RPC broadcasting is a separate future adapter.
+- Lightning currently targets LND.
+- This is custodial payment infrastructure. Review and test before using real funds.
