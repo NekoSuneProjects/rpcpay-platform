@@ -2,35 +2,93 @@
   "chains": [
     {
       "id": "ethereum", "name": "Ethereum", "symbol": "ETH", "adapter": "evm-native",
-      "rpcUrls": ["${ETH_RPC_URL:-}"], "decimals": 18, "confirmations": 12,
-      "addressMode": "generated-local", "priceId": "ethereum", "enabled": true, "sweepGasMultiplierBps": 12500
+      "rpcUrls": ["https://ethereum-rpc.publicnode.com", "${ETH_NOWNODES_RPC_URL:-}"],
+      "rpcHeaders": {"api-key": "${NOWNODES_API_KEY:-}"},
+      "gasSponsorPrivateKey": "${ETH_GAS_SPONSOR_PRIVATE_KEY:-}",
+      "decimals": 18, "confirmations": 12, "addressMode": "generated-local", "priceId": "ethereum", "enabled": true,
+      "sweepGasMultiplierBps": 12500
     },
     {
       "id": "polygon", "name": "Polygon PoS", "symbol": "POL", "adapter": "evm-native",
-      "rpcUrls": ["${POLYGON_RPC_URL:-https://polygon.drpc.org}"], "decimals": 18, "confirmations": 64,
-      "addressMode": "generated-local", "priceId": "polygon-ecosystem-token", "enabled": true, "sweepGasMultiplierBps": 12500
+      "rpcUrls": ["https://polygon-bor-rpc.publicnode.com", "${POLYGON_NOWNODES_RPC_URL:-}"],
+      "rpcHeaders": {"api-key": "${NOWNODES_API_KEY:-}"},
+      "gasSponsorPrivateKey": "${POLYGON_GAS_SPONSOR_PRIVATE_KEY:-}",
+      "decimals": 18, "confirmations": 64, "addressMode": "generated-local", "priceId": "polygon-ecosystem-token", "enabled": true,
+      "sweepGasMultiplierBps": 12500
     },
     {
       "id": "base", "name": "Base", "symbol": "ETH", "adapter": "evm-native",
-      "rpcUrls": ["${BASE_RPC_URL:-https://mainnet.base.org}"], "decimals": 18, "confirmations": 12,
-      "addressMode": "generated-local", "priceId": "ethereum", "enabled": true, "sweepGasMultiplierBps": 12500
+      "rpcUrls": ["https://base-rpc.publicnode.com", "https://mainnet.base.org", "${BASE_NOWNODES_RPC_URL:-}"],
+      "rpcHeaders": {"api-key": "${NOWNODES_API_KEY:-}"},
+      "gasSponsorPrivateKey": "${BASE_GAS_SPONSOR_PRIVATE_KEY:-}",
+      "decimals": 18, "confirmations": 12, "addressMode": "generated-local", "priceId": "ethereum", "enabled": true,
+      "sweepGasMultiplierBps": 12500
     },
     {
       "id": "bnb", "name": "BNB Smart Chain", "symbol": "BNB", "adapter": "evm-native",
-      "rpcUrls": ["${BNB_RPC_URL:-https://bsc-dataseed.bnbchain.org}"], "decimals": 18, "confirmations": 5,
-      "addressMode": "generated-local", "priceId": "binancecoin", "enabled": true, "sweepGasMultiplierBps": 12500
+      "rpcUrls": ["https://bsc-rpc.publicnode.com", "https://bsc-dataseed.bnbchain.org", "${BNB_NOWNODES_RPC_URL:-}"],
+      "rpcHeaders": {"api-key": "${NOWNODES_API_KEY:-}"},
+      "gasSponsorPrivateKey": "${BNB_GAS_SPONSOR_PRIVATE_KEY:-}",
+      "decimals": 18, "confirmations": 5, "addressMode": "generated-local", "priceId": "binancecoin", "enabled": true,
+      "sweepGasMultiplierBps": 12500
     },
     {
       "id": "tron", "name": "TRON", "symbol": "TRX", "adapter": "tron-native",
-      "rpcUrls": ["${TRON_RPC_URL:-https://api.trongrid.io}"], "apiKey": "${TRON_API_KEY:-}",
+      "rpcUrls": ["https://tron-rpc.publicnode.com", "https://api.trongrid.io", "${TRON_NOWNODES_RPC_URL:-}"],
+      "rpcHeaders": {"api-key": "${NOWNODES_API_KEY:-}"}, "apiKey": "${TRONGRID_API_KEY:-}",
+      "gasSponsorPrivateKey": "${TRON_GAS_SPONSOR_PRIVATE_KEY:-}",
       "decimals": 6, "confirmations": 19, "addressMode": "generated-local", "priceId": "tron", "enabled": true,
       "sweepReserveAtomic": "1500000"
     },
     {
       "id": "solana", "name": "Solana", "symbol": "SOL", "adapter": "solana-native",
-      "rpcUrls": ["${SOLANA_RPC_URL:-https://api.mainnet.solana.com}"], "decimals": 9, "confirmations": 2,
-      "addressMode": "generated-local", "priceId": "solana", "enabled": true
+      "rpcUrls": ["https://solana-rpc.publicnode.com", "https://api.mainnet-beta.solana.com", "${SOLANA_NOWNODES_RPC_URL:-}"],
+      "rpcHeaders": {"api-key": "${NOWNODES_API_KEY:-}"},
+      "gasSponsorSecretKey": "${SOLANA_GAS_SPONSOR_SECRET_KEY:-}",
+      "decimals": 9, "confirmations": 2, "addressMode": "generated-local", "priceId": "solana", "enabled": true
     },
+
+    {
+      "id": "ethereum-usdc", "name": "USD Coin on Ethereum", "symbol": "USDC", "adapter": "evm-token", "networkId": "ethereum",
+      "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "decimals": 6, "confirmations": 12,
+      "priceId": "usd-coin", "enabled": true, "sweepGasMultiplierBps": 14000
+    },
+    {
+      "id": "ethereum-usdt", "name": "Tether USD on Ethereum", "symbol": "USDT", "adapter": "evm-token", "networkId": "ethereum",
+      "contractAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7", "decimals": 6, "confirmations": 12,
+      "priceId": "tether", "enabled": true, "sweepGasMultiplierBps": 14000
+    },
+    {
+      "id": "base-usdc", "name": "USD Coin on Base", "symbol": "USDC", "adapter": "evm-token", "networkId": "base",
+      "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "decimals": 6, "confirmations": 12,
+      "priceId": "usd-coin", "enabled": true, "sweepGasMultiplierBps": 14000
+    },
+    {
+      "id": "polygon-usdc", "name": "USD Coin on Polygon", "symbol": "USDC", "adapter": "evm-token", "networkId": "polygon",
+      "contractAddress": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", "decimals": 6, "confirmations": 64,
+      "priceId": "usd-coin", "enabled": true, "sweepGasMultiplierBps": 14000
+    },
+    {
+      "id": "bnb-usdt", "name": "Binance-Peg USDT on BNB Chain", "symbol": "USDT", "adapter": "evm-token", "networkId": "bnb",
+      "contractAddress": "0x55d398326f99059fF775485246999027B3197955", "decimals": 18, "confirmations": 5,
+      "priceId": "tether", "enabled": false, "sweepGasMultiplierBps": 14000
+    },
+    {
+      "id": "tron-usdt", "name": "Tether USD on TRON", "symbol": "USDT", "adapter": "tron-token", "networkId": "tron",
+      "contractAddress": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", "decimals": 6, "confirmations": 19,
+      "priceId": "tether", "enabled": true, "gasTopupAtomic": "30000000", "feeLimitSun": 100000000
+    },
+    {
+      "id": "solana-usdc", "name": "USD Coin on Solana", "symbol": "USDC", "adapter": "solana-token", "networkId": "solana",
+      "mintAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "decimals": 6, "confirmations": 2,
+      "priceId": "usd-coin", "enabled": true
+    },
+    {
+      "id": "solana-usdt", "name": "Tether USD on Solana", "symbol": "USDT", "adapter": "solana-token", "networkId": "solana",
+      "mintAddress": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", "decimals": 6, "confirmations": 2,
+      "priceId": "tether", "enabled": true
+    },
+
     {
       "id": "bitcoin", "name": "Bitcoin", "symbol": "BTC", "adapter": "bitcoin-rpc",
       "rpcUrls": ["${BTC_RPC_URL:-}"], "rpcUser": "${BTC_RPC_USER:-}", "rpcPassword": "${BTC_RPC_PASSWORD:-}",
