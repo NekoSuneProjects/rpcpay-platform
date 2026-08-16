@@ -37,7 +37,8 @@ export function buildServer({db,adapters,invoiceService,apiKey,adminAuth,watcher
       if(req.method==='GET'&&url.pathname==='/admin/api/hot-wallet'){
         const currency=String(url.searchParams.get('currency')||'USD').toUpperCase();
         if(!/^[A-Z]{3,8}$/.test(currency))return json(res,400,{error:'invalid_currency'});
-        return json(res,200,await hotWallet.snapshot({currency}));
+        const force=url.searchParams.get('refresh')==='1';
+        return json(res,200,await hotWallet.snapshot({currency,maxAgeMs:force?0:10000}));
       }
       if(req.method==='GET'&&url.pathname==='/admin/api/campaigns')return json(res,200,{campaigns:db.listCampaigns()});
       if(req.method==='POST'&&url.pathname==='/admin/api/campaigns'){const b=await readJson(req);const slug=cleanSlug(b.slug);if(!slug||!b.title||!/^\d+(\.\d+)?$/.test(String(b.goalAmount||'')))return json(res,400,{error:'slug, title and numeric goalAmount are required'});try{return json(res,201,db.createCampaign({...b,slug}));}catch(e){return json(res,400,{error:e.message});}}
