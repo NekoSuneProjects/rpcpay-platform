@@ -1,0 +1,70 @@
+{
+  "chains": [
+    {
+      "id": "ethereum", "name": "Ethereum", "symbol": "ETH", "adapter": "evm-native",
+      "rpcUrls": ["${ETH_RPC_URL:-}"], "decimals": 18, "confirmations": 12,
+      "addressMode": "generated-local", "priceId": "ethereum", "enabled": true, "sweepGasMultiplierBps": 12500
+    },
+    {
+      "id": "polygon", "name": "Polygon PoS", "symbol": "POL", "adapter": "evm-native",
+      "rpcUrls": ["${POLYGON_RPC_URL:-https://polygon.drpc.org}"], "decimals": 18, "confirmations": 64,
+      "addressMode": "generated-local", "priceId": "polygon-ecosystem-token", "enabled": true, "sweepGasMultiplierBps": 12500
+    },
+    {
+      "id": "base", "name": "Base", "symbol": "ETH", "adapter": "evm-native",
+      "rpcUrls": ["${BASE_RPC_URL:-https://mainnet.base.org}"], "decimals": 18, "confirmations": 12,
+      "addressMode": "generated-local", "priceId": "ethereum", "enabled": true, "sweepGasMultiplierBps": 12500
+    },
+    {
+      "id": "bnb", "name": "BNB Smart Chain", "symbol": "BNB", "adapter": "evm-native",
+      "rpcUrls": ["${BNB_RPC_URL:-https://bsc-dataseed.bnbchain.org}"], "decimals": 18, "confirmations": 5,
+      "addressMode": "generated-local", "priceId": "binancecoin", "enabled": true, "sweepGasMultiplierBps": 12500
+    },
+    {
+      "id": "tron", "name": "TRON", "symbol": "TRX", "adapter": "tron-native",
+      "rpcUrls": ["${TRON_RPC_URL:-https://api.trongrid.io}"], "apiKey": "${TRON_API_KEY:-}",
+      "decimals": 6, "confirmations": 19, "addressMode": "generated-local", "priceId": "tron", "enabled": true,
+      "sweepReserveAtomic": "1500000"
+    },
+    {
+      "id": "solana", "name": "Solana", "symbol": "SOL", "adapter": "solana-native",
+      "rpcUrls": ["${SOLANA_RPC_URL:-https://api.mainnet.solana.com}"], "decimals": 9, "confirmations": 2,
+      "addressMode": "generated-local", "priceId": "solana", "enabled": true
+    },
+    {
+      "id": "bitcoin", "name": "Bitcoin", "symbol": "BTC", "adapter": "bitcoin-rpc",
+      "rpcUrls": ["${BTC_RPC_URL:-}"], "rpcUser": "${BTC_RPC_USER:-}", "rpcPassword": "${BTC_RPC_PASSWORD:-}",
+      "decimals": 8, "confirmations": 3, "addressMode": "rpc-wallet", "priceId": "bitcoin", "enabled": false, "sweepReserveAtomic": "1000"
+    },
+    {
+      "id": "bitcoin-lightning", "name": "Bitcoin Lightning", "symbol": "BTC", "adapter": "lnd",
+      "rpcUrls": ["${LND_REST_URL:-}"], "macaroonHex": "${LND_MACAROON_HEX:-}",
+      "decimals": 8, "confirmations": 1, "addressMode": "lightning", "priceId": "bitcoin", "enabled": false
+    },
+    {
+      "id": "dogecoin", "name": "Dogecoin", "symbol": "DOGE", "adapter": "bitcoin-rpc",
+      "rpcUrls": ["${DOGE_RPC_URL:-}"], "rpcUser": "${DOGE_RPC_USER:-}", "rpcPassword": "${DOGE_RPC_PASSWORD:-}",
+      "decimals": 8, "confirmations": 6, "addressMode": "rpc-wallet", "priceId": "dogecoin", "enabled": false, "sweepReserveAtomic": "1000000"
+    },
+    {
+      "id": "litecoin", "name": "Litecoin", "symbol": "LTC", "adapter": "bitcoin-rpc",
+      "rpcUrls": ["${LTC_RPC_URL:-}"], "rpcUser": "${LTC_RPC_USER:-}", "rpcPassword": "${LTC_RPC_PASSWORD:-}",
+      "decimals": 8, "confirmations": 6, "addressMode": "rpc-wallet", "priceId": "litecoin", "enabled": false, "sweepReserveAtomic": "10000"
+    },
+    {
+      "id": "bitcoin-cash", "name": "Bitcoin Cash", "symbol": "BCH", "adapter": "bitcoin-rpc",
+      "rpcUrls": ["${BCH_RPC_URL:-}"], "rpcUser": "${BCH_RPC_USER:-}", "rpcPassword": "${BCH_RPC_PASSWORD:-}",
+      "decimals": 8, "confirmations": 6, "addressMode": "rpc-wallet", "priceId": "bitcoin-cash", "enabled": false, "sweepReserveAtomic": "1000"
+    },
+    {
+      "id": "dash", "name": "Dash", "symbol": "DASH", "adapter": "bitcoin-rpc",
+      "rpcUrls": ["${DASH_RPC_URL:-}"], "rpcUser": "${DASH_RPC_USER:-}", "rpcPassword": "${DASH_RPC_PASSWORD:-}",
+      "decimals": 8, "confirmations": 6, "addressMode": "rpc-wallet", "priceId": "dash", "enabled": false, "sweepReserveAtomic": "1000"
+    },
+    {
+      "id": "pivx", "name": "PIVX", "symbol": "PIVX", "adapter": "bitcoin-rpc",
+      "rpcUrls": ["${PIVX_RPC_URL:-}"], "rpcUser": "${PIVX_RPC_USER:-}", "rpcPassword": "${PIVX_RPC_PASSWORD:-}",
+      "decimals": 8, "confirmations": 6, "addressMode": "rpc-wallet", "priceId": "pivx", "enabled": false, "sweepReserveAtomic": "10000"
+    }
+  ]
+}
