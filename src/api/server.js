@@ -9,9 +9,9 @@ const html=(res,status,body)=>send(res,status,body,'text/html; charset=utf-8',{'
 async function readJson(req,max=128*1024){const chunks=[];let n=0;for await(const c of req){n+=c.length;if(n>max)throw new Error('request_body_too_large');chunks.push(c);}const t=Buffer.concat(chunks).toString('utf8');return t?JSON.parse(t):{};}
 function cleanSlug(s){return String(s||'').toLowerCase().trim().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'');}
 function adminOk(req,auth){return auth.verifySession(parseCookies(req.headers.cookie||'').rpcpay_admin);}
-function chainPublic(adapter){return{id:adapter.chain.id,name:adapter.chain.name,symbol:adapter.chain.symbol,adapter:adapter.chain.adapter,decimals:adapter.chain.decimals,confirmations:adapter.chain.confirmations,enabled:adapter.isEnabled()};}
+function chainPublic(adapter){return{id:adapter.chain.id,name:adapter.chain.name,symbol:adapter.chain.symbol,adapter:adapter.chain.adapter,decimals:adapter.chain.decimals,confirmations:adapter.chain.confirmations,enabled:adapter.isEnabled(),networkId:adapter.chain.networkId||null,contractAddress:adapter.chain.contractAddress||null,networkRpcUrls:adapter.chain.networkRpcUrls||[]};}
 
-export function buildServer({db,adapters,invoiceService,apiKey,adminAuth,watcher}){
+export function buildServer({db,adapters,invoiceService,apiKey,adminAuth,watcher,hotWallet}){
   return createServer(async(req,res)=>{try{
     const url=new URL(req.url,'http://localhost');
     if(req.method==='OPTIONS'){res.writeHead(204,{'access-control-allow-origin':process.env.PUBLIC_CORS_ORIGIN||'*','access-control-allow-methods':'GET,POST,PUT,OPTIONS','access-control-allow-headers':'content-type,x-api-key'});return res.end();}
@@ -34,6 +34,11 @@ export function buildServer({db,adapters,invoiceService,apiKey,adminAuth,watcher
       if(!adminOk(req,adminAuth))return json(res,401,{error:'unauthorized'});
       if(req.method==='GET'&&url.pathname==='/admin/api/me')return json(res,200,{ok:true});
       if(req.method==='GET'&&url.pathname==='/admin/api/overview')return json(res,200,{invoices:db.listInvoices(100).map(publicInvoice),campaigns:db.listCampaigns()});
+      if(req.method==='GET'&&url.pathname==='/admin/api/hot-wallet'){
+        const currency=String(url.searchParams.get('currency')||'USD').toUpperCase();
+        if(!/^[A-Z]{3,8}$/.test(currency))return json(res,400,{error:'invalid_currency'});
+        return json(res,200,await hotWallet.snapshot({currency}));
+      }
       if(req.method==='GET'&&url.pathname==='/admin/api/campaigns')return json(res,200,{campaigns:db.listCampaigns()});
       if(req.method==='POST'&&url.pathname==='/admin/api/campaigns'){const b=await readJson(req);const slug=cleanSlug(b.slug);if(!slug||!b.title||!/^\d+(\.\d+)?$/.test(String(b.goalAmount||'')))return json(res,400,{error:'slug, title and numeric goalAmount are required'});try{return json(res,201,db.createCampaign({...b,slug}));}catch(e){return json(res,400,{error:e.message});}}
       const cu=url.pathname.match(/^\/admin\/api\/campaigns\/([^/]+)$/);if(req.method==='PUT'&&cu){const b=await readJson(req);if(b.slug)b.slug=cleanSlug(b.slug);const c=db.updateCampaign(decodeURIComponent(cu[1]),b);return c?json(res,200,c):json(res,404,{error:'campaign_not_found'});}
