@@ -1,15 +1,15 @@
 {
   "name": "rpcpay-platform",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
-  "description": "Lightweight self-hosted multi-chain RPC donation gateway with campaigns, native coins, tokens, sweeping, admin UI and webhooks",
+  "description": "Lightweight self-hosted multi-chain RPC donation gateway with campaigns, native coins, tokens, hot-wallet portfolio, sweeping, admin UI and webhooks",
   "type": "module",
   "engines": { "node": ">=24.0.0" },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test",
-    "check": "node --check src/index.js && node --check src/api/server.js && node --check src/adapters/evm.js && node --check src/adapters/evmToken.js && node --check src/adapters/bitcoinRpc.js && node --check src/adapters/solana.js && node --check src/adapters/solanaToken.js && node --check src/adapters/tron.js && node --check src/adapters/tronToken.js && node --check src/adapters/lnd.js"
+    "check": "node --check src/index.js && node --check src/api/server.js && node --check src/services/prices.js && node --check src/services/hotWallet.js && node --check src/ui/pages.js && node --check src/adapters/evm.js && node --check src/adapters/evmToken.js && node --check src/adapters/bitcoinRpc.js && node --check src/adapters/solana.js && node --check src/adapters/solanaToken.js && node --check src/adapters/tron.js && node --check src/adapters/tronToken.js && node --check src/adapters/lnd.js"
   },
   "dependencies": {
     "@solana/spl-token": "^0.4.15",
