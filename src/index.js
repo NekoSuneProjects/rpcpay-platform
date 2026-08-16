@@ -7,7 +7,7 @@ import {InvoiceService} from './services/invoices.js';
 import {WebhookService} from './services/webhooks.js';
 import {PaymentWatcher} from './services/watcher.js';
 import {PriceService} from './services/prices.js';
-import {EvmHotWalletService} from './services/hotWallet.js';
+import {EvmHotWalletService,loadHotWalletPortfolio} from './services/hotWallet.js';
 import {SecretBox} from './lib/secrets.js';
 import {AdminAuth} from './lib/adminAuth.js';
 import {buildServer} from './api/server.js';
@@ -27,6 +27,7 @@ const hotWallet=new EvmHotWalletService({
   chains:config.chains,
   adapters,
   priceService:prices,
+  portfolio:loadHotWalletPortfolio(),
   address:process.env.EVM_HOT_WALLET_ADDRESS,
   privateKey:process.env.EVM_HOT_WALLET_PRIVATE_KEY,
 });
